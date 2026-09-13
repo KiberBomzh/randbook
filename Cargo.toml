@@ -1,0 +1,9 @@
+[package]
+name = "randbook"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+fastrand = "2.5.0"
+reqwest = { version = "0.13.5", features = ["native-tls"] }
+tokio = { version  = "1.53.1", features = [ "full" ] }
