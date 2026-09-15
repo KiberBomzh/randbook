@@ -13,10 +13,10 @@ const MAX_INDEX: u32 = 27118;
 
 
 const PROGRESS_BAR_TEMPLATE: &str =
-    " [{bar:20}] {bytes}/{total_bytes} ({bytes_per_sec}) ";
+    " [{bar}] {bytes}/{total_bytes} ({bytes_per_sec}) ";
 
 const MAIN_PROGRESS_BAR_TEMPLATE: &str =
-    " {elapsed_precise} {bar:40} {human_pos}/{human_len} ";
+    " {elapsed_precise} {wide_bar} {human_pos}/{human_len} ";
 
 
 
