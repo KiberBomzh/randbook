@@ -11,13 +11,59 @@ const URL: &str = "searchfloor.org";
 const MAX_INDEX: u32 = 27118;
 
 
+struct Args {
+    amount: u32,
+    directory: PathBuf,
+}
+impl Args {
+    fn parse() -> Result<Self, lexopt::Error> {
+        use lexopt::prelude::*;
+
+
+        let mut a = None;
+        let mut dir = None;
+
+        let mut parser = lexopt::Parser::from_env();
+        while let Some(arg) = parser.next()? {
+            match arg {
+                Short('a') | Long("amount") if a.is_none() => {
+                    let v: u32 = parser.value()?.parse()?;
+                    a = Some(v);
+                },
+                Short('d') | Long("directory") if dir.is_none() => {
+                    let v = parser.value()?;
+                    let p = PathBuf::from(v);
+                    dir = Some(p);
+                },
+
+                _ => return Err(arg.unexpected())
+            }
+        }
+
+        let amount = a.unwrap_or(1);
+        let directory = dir.unwrap_or(PathBuf::from("."));
+        Ok(Self{ amount, directory })
+    }
+}
+
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let base_url = URL_PREFFIX.to_string() + URL;
     let client = reqwest::Client::new();
+    let args = Args::parse()?;
 
-    let amount = 10;
-    let dir = PathBuf::from(".");
+    let amount = args.amount;
+    let dir = args.directory;
+    if !dir.is_dir() {
+        use std::fs;
+
+        if dir.is_file() {
+            fs::remove_file(&dir)?;
+        }
+        fs::create_dir_all(&dir)?;
+    }
+
 
     for _ in 0..amount {
         if let Err(err) = download(&client, &base_url, &dir).await {
