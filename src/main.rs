@@ -66,8 +66,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 
     for _ in 0..amount {
-        if let Err(err) = download(&client, &base_url, &dir).await {
+        let index = fastrand::u32(..MAX_INDEX);
+        let url = format!("{base_url}/book/{index}");
+
+        if let Err(err) = download(&client, url, index, &dir).await {
             eprintln!("{err}");
+        } else {
+            println!("Downloaded: {index}");
         }
     }
 
@@ -75,9 +80,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-async fn download(client: &Client, base_url: &str, dir: &Path) -> Result<(), Box<dyn std::error::Error>> {
-    let index = fastrand::u32(..MAX_INDEX);
-    let url = format!("{base_url}/book/{index}");
+async fn download(client: &Client, url: String, index: u32, dir: &Path) -> Result<(), Box<dyn std::error::Error>> {
     let resp = client
         .get(&url)
         .send()
@@ -91,6 +94,8 @@ async fn download(client: &Client, base_url: &str, dir: &Path) -> Result<(), Box
         let file_name = dir.join(index.to_string()).with_extension(ext);
         let mut file = std::fs::File::create(file_name)?;
         file.write_all(&resp.bytes().await?)?;
+    } else {
+        return Err("Response is not 200!".into());
     }
 
 
